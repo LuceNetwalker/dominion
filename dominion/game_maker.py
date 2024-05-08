@@ -34,7 +34,7 @@ def make_random_game(player1, player2, requires):
     # remove all the cards already in kingdom_cards from the choices
     possible_choices.difference_update(kingdom_cards)
 
-    kingdom_cards.update(random.sample(possible_choices, 10 - len(kingdom_cards)))
+    kingdom_cards.update(random.sample(list(possible_choices), 10 - len(kingdom_cards)))
 
     game = Game(kingdom_cards)
 

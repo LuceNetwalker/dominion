@@ -188,38 +188,48 @@ class Player {
     }
 
     buyCard(card) {
-        websocket.send(JSON.stringify({ type: 'buy_card', card: card }));
+        // websocket.send(JSON.stringify({ type: 'buy_card', card: card }));
+        websocket.emit('buy_card', card);
     }
 
     playCard(card) {
-        websocket.send(JSON.stringify({ type: 'play_card', card: card }));
+        // websocket.send(JSON.stringify({ type: 'play_card', card: card }));
+        websocket.emit('play_card', card);
     }
 
     finishActionPhase() {
-        websocket.send(JSON.stringify({ type: 'finish_action_phase' }));
+        // websocket.send(JSON.stringify({ type: 'finish_action_phase' }));
+        websocket.emit('finish_action_phase', '');
         this.finishButton.style.display = 'none';
         this.removeClickListenersFromHand();
     }
 
     finishTurn() {
         this.isMyTurn = false;
-        websocket.send(JSON.stringify({ type: 'finish_turn' }));
+        // websocket.send(JSON.stringify({ type: 'finish_turn' }));
+        websocket.emit('finish_turn');
         this.finishButton.style.display = 'none';
         supply.removeClickListeners();
     }
 
     handleAskYesOrNo(message) {
         var answer = confirm(message.prompt);
-        websocket.send(JSON.stringify({ type: 'answer_yes_or_no', answer: answer }));
+        // websocket.send(JSON.stringify({ type: 'answer_yes_or_no', answer: answer }));
+        websocket.emit('answer_yes_or_no', answer);
+    }
+
+    chooseCard(card) {
+        // websocket.send(JSON.stringify({ type: 'chosen_card', card: card }));
+        websocket.emit('chosen_card', card);
     }
 
     handleChooseFromCollection(message) {
-        while (true) {
-            var choice = prompt('Choose card from: ' + message.collection);
-            if (message.collection.includes(choice)) {
-                websocket.send(JSON.stringify({ type: 'chosen_card', card: choice }));
-                break;
-            }
+        for (let card of message.collection) {
+            console.log(card)
+            this.addClickListenerToHand(card, () => {
+                this.chooseCard(card);
+                this.removeClickListenersFromHand();
+            });
         }
     }
 }

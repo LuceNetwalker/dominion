@@ -3,3 +3,4 @@ Flask-Sockets
 keras
 numpy
 h5py
+tensorflow

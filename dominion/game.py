@@ -52,12 +52,15 @@ class Game:
     def __init__(self, kingdom_card_constructors):
         self.card_piles_by_name = {}
 
+        num_default_kingdom_cards = 8
         for constructor in kingdom_card_constructors:
-            self.card_piles_by_name[constructor.__name__] = [constructor() for _ in range(8)]
+            self.card_piles_by_name[constructor.__name__] = [constructor() for _ in range(num_default_kingdom_cards)]
 
         default_cards = [(estate, 14), (duchy, 8), (province, 8), (curse, 20), (copper, 60), (silver, 40), (gold, 30)]
         for constructor, amount in default_cards:
             self.card_piles_by_name[constructor.__name__] = [constructor() for _ in range(amount)]
+
+        self.default_hand = [(7, 'copper'), (3, 'estate')]
 
         self.turn_number = 1
 
@@ -91,7 +94,7 @@ class Game:
             handle.notify_started_game()
 
         for handle, state in self.player_state_by_handle.items():
-            for amount, card_name in [(7, 'copper'), (3, 'estate')]:
+            for amount, card_name in self.default_hand:
                 for _ in range(amount):
                     self.move_to_discard(handle, self.buy(card_name))
                 self.cleanup_for(handle)
@@ -107,6 +110,8 @@ class Game:
 
     def start_action_phase_for(self, player_handle):
         i = (self.current_turn + 1) % len(self.player_handles)
+        # Attention!!
+        # look into this this loop might end up in an error because it might not run through all players
         while i != self.current_turn:
             self.player_handles[i].notify_started_action_phase(player_handle.name)
             i = (i + 1) % len(self.player_handles)

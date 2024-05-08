@@ -11,8 +11,8 @@ console_player = ConsolePlayer()
 
 game = make_random_game(console_player, ai_player, ai_player.requires())
 
-game.add_player(console_player)
-game.add_player(ai_player)
+# game.add_player(console_player)
+# game.add_player(ai_player)
 
 game.start()
 while not game.is_over():

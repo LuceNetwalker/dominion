@@ -1,4 +1,4 @@
-var name = prompt('What is your name?');
+var player_name = prompt('What is your name?');
 
 var websocket;
 
@@ -64,7 +64,7 @@ function main() {
     messageHandlers['notify_joined_game'].push((message) => supply.handleNotifyJoinedGame(message));
     messageHandlers['notify_card_bought'].push((message) => supply.handleNotifyCardBought(message));
 
-    player = new Player(name, 3.5 * (cardHeight + 10), true);
+    player = new Player(player_name, 3.5 * (cardHeight + 10), true);
 
     messageHandlers['notify_gained_card_to_hand'].push((message) => player.handleGainedCardToHand(message));
     messageHandlers['notify_gained_card_to_discard'].push((message) => player.handleGainedCardToDiscard(message));
@@ -81,38 +81,52 @@ function main() {
     messageHandlers['notify_player_joined'].push(handleOpponentJoined);
     messageHandlers['notify_finished_game'].push(handleFinishedGame);
 
-    websocket = new WebSocket("ws://localhost:5000/game");
-    websocket.onopen = onConnect;
-    websocket.onclose = onDisconnect;
-    websocket.onmessage = onMessage;
-    websocket.onerror = onError;
+    // websocket = new WebSocket("ws://localhost:5000/game");
+    // websocket.onopen = onConnect;
+    // websocket.onclose = onDisconnect;
+    // websocket.onmessage = onMessage;
+    // websocket.onerror = onError;
+    websocket = io();
+    websocket.connect('http://127.0.0.1:5000/')
+    websocket.on('log', (data) => {
+        console.log(data);
+    });
+    websocket.on('connect', function () {
+        console.log("connected!");
+    
+        var args = {
+            name: player_name,
+            game: 'random',
+            ai: 'BigMoneyPlayer',
+            requires: ['throne_room', 'vassal'],
+        };
+        websocket.emit('user_join', args);
+    });
+    websocket.on('message', (event) => {
+        console.log(typeof event);
+        console.log(event)
+        var message = JSON.parse(event);
+        console.log(message.type in messageHandlers);
+        if (message.type in messageHandlers) {
+            console.log("got into the if statement")
+            for (let handler of messageHandlers[message.type]) {
+                handler(message);
+                console.log(handler)
+            }
+            stage.update();
+        }
+    });
+    websocket.on('disconnect', onDisconnect);
+    websocket.on('error', onError);
 }
 
-function onConnect(event) {
-    console.log("connected!");
 
-    var args = {
-        name: name,
-        game: 'random',
-        ai: 'BigMoneyPlayer',
-        requires: ['throne_room', 'vassal'],
-    };
-    websocket.send(JSON.stringify(args));
-}
 
 function onDisconnect(event) {
     console.log("disconnected!");
 }
 
-function onMessage(event) {
-    var message = JSON.parse(event.data);
-    if (message.type in messageHandlers) {
-        for (let handler of messageHandlers[message.type]) {
-            handler(message);
-        }
-        stage.update();
-    }
-}
+
 
 function onError(event) {
     console.log("error!");

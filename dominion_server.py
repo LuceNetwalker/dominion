@@ -1,24 +1,29 @@
+from flask import Flask, render_template
+from flask_socketio import SocketIO, send, emit
 import json
-from flask import Flask
-from flask_sockets import Sockets
-from geventwebsocket.websocket import WebSocket
+import eventlet
 
 from dominion import make_premade_game, make_random_game, WebsocketPlayer
 import dominion.cards
 import dominion_ai
 
+
 app = Flask(__name__)
-sockets = Sockets(app)
+# socketio = SocketIO(app, async_mode="threading")
+socketio = SocketIO(app, async_mode="eventlet")
+
+@socketio.on('connect')
+def handle_connect():
+    print('Websocket connected')
 
 
-@sockets.route('/game')
-def play_game(websocket: WebSocket):
-    print('Websocket connnected')
-    args = json.loads(websocket.receive())
+
+@socketio.on('user_join')
+def play_game(args):
 
     print('Starting game with {}'.format(args))
 
-    player = WebsocketPlayer(args['name'], websocket)
+    player = WebsocketPlayer(args['name'], socketio)  # Use sid to identify the client
     ai = getattr(dominion_ai, args['ai'])(args['ai'])
 
     if args['game'] == 'random':
@@ -35,15 +40,9 @@ def play_game(websocket: WebSocket):
 
     print('Finished game.')
 
-
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
 
-
 if __name__ == '__main__':
-    from gevent import pywsgi
-    from geventwebsocket.handler import WebSocketHandler
-
-    server = pywsgi.WSGIServer(('localhost', 5000), app, handler_class=WebSocketHandler)
-    server.serve_forever()
+    socketio.run(app, host='localhost', port=5000)
