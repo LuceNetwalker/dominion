@@ -1,5 +1,6 @@
 from dominion import AIPlayer
 from dominion.cards import smithy, witch
+from time import sleep
 
 """
 Big Money AIs from http://wiki.dominionstrategy.com/index.php/Big_Money
@@ -19,7 +20,8 @@ class BigMoneyPlayer(AIPlayer):
         card_to_buy = self.get_card_to_buy()
         if card_to_buy is not None and self.can_buy(card_to_buy):
             self.buy(card_to_buy)
-
+        sleep(1)
+            
     def choose_card_from(self, collection):
         for card_name in ['curse', 'province', 'duchy', 'estate', 'copper', 'silver', 'gold']:
             if card_name in collection:
@@ -36,6 +38,7 @@ class SmithyBigMoneyPlayer(BigMoneyPlayer):
     def action_phase(self):
         if self.can_play('smithy'):
             self.play('smithy')
+        sleep(1)
 
     def get_card_to_buy(self):
         if self.can_buy('smithy') and self.num_owned('smithy') < 2:
@@ -51,6 +54,7 @@ class WitchBigMoneyPlayer(BigMoneyPlayer):
     def action_phase(self):
         if self.can_play('witch'):
             self.play('witch')
+        sleep(1)
 
     def get_card_to_buy(self):
         if self.can_buy('witch') and self.num_owned('witch') < 2:

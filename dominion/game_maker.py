@@ -1,5 +1,6 @@
 from .cards import *
 from .game import Game
+from .player import PlayerHandle
 import random
 
 PREMADE_GAMES = {
@@ -16,16 +17,16 @@ PREMADE_GAMES = {
 }
 
 
-def make_premade_game(player1, player2, game_name):
+def make_premade_game(playerlist: list[PlayerHandle], game_name):
     game = Game(PREMADE_GAMES[game_name])
 
-    game.add_player(player1)
-    game.add_player(player2)
+    for player in playerlist:
+        game.add_player(player)
 
     return game
 
 
-def make_random_game(player1, player2, requires):
+def make_random_game(playerlist: list[PlayerHandle], requires):
     possible_choices = set(DOMINION_CARDS)
 
     kingdom_cards = set()
@@ -38,7 +39,7 @@ def make_random_game(player1, player2, requires):
 
     game = Game(kingdom_cards)
 
-    game.add_player(player1)
-    game.add_player(player2)
+    for player in playerlist:
+        game.add_player(player)
 
     return game

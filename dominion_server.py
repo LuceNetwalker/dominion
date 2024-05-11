@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO, send, emit
 import json
 import eventlet
@@ -16,22 +16,41 @@ socketio = SocketIO(app, async_mode="eventlet")
 def handle_connect():
     print('Websocket connected')
 
+userdict: list[WebsocketPlayer] = {}
 
 
-@socketio.on('user_join')
+@socketio.event
+def user_join(data):
+    for player in userdict.values():
+        if data['name'] in player.name:
+            socketio.emit('choose_other_name')
+            eventlet.sleep()
+            return
+    
+    player = WebsocketPlayer(data['name'], socketio)
+    userdict[request.sid] = player
+    return
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    userdict.pop(request.sid)
+
+@socketio.on('start_game')
 def play_game(args):
 
     print('Starting game with {}'.format(args))
 
-    player = WebsocketPlayer(args['name'], socketio)  # Use sid to identify the client
-    ai = getattr(dominion_ai, args['ai'])(args['ai'])
+    # player = WebsocketPlayer(args['name'], socketio)  # Use sid to identify the client
+    ai = getattr(dominion_ai, 'BigMoneyPlayer')('BigMoneyPlayer')
+    userdict['BigMoneyPlayer'] = ai
 
     if args['game'] == 'random':
-        reqs = set(map(lambda req: getattr(dominion.cards, req), args['requires']))
+        # reqs = set(map(lambda req: getattr(dominion.cards, req), args['requires']))
+        reqs = set()
         reqs.update(ai.requires())
-        game = make_random_game(player, ai, reqs)
+        game = make_random_game(userdict.values(), reqs)
     else:
-        game = make_premade_game(player, ai, args['game'])
+        game = make_premade_game(userdict.values(), args['game'])
 
     game.start()
     while not game.is_over():

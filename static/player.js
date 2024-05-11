@@ -30,12 +30,25 @@ class Player {
             this.finishButton.style.display = 'none';
             this.finishButton.style.left = cardPadding + 'px';
             this.finishButton.style.top = this.handContainer.y + 'px';
+            this.startButton = document.getElementById('startButton');
+            this.startButton.addEventListener("click", function() {
+                console.log('Start the Game.')
+                selectedOption = document.getElementById('options').value;
+                websocket.emit('start_game', {'game': selectedOption});
+            });
         }
 
         this.actionsText = makeTextAt(10, this.handContainer.y + 30, "Actions: 0", "#ffffff", 0);
         this.buysText = makeTextAt(10, this.handContainer.y + 55, "Buys: 0", "#ffffff", 0);
         this.coinsText = makeTextAt(10, this.handContainer.y + 80, "Coins: 0", "#ffffff", 0);
         stage.addChild(this.actionsText, this.buysText, this.coinsText);
+    }
+
+    handleStartedGame(message) {
+        if (this.canInteract) {
+            console.log('started game');
+            document.getElementById('container').style.display = "none";
+        }
     }
 
     handleGainedCardToHand(message) {

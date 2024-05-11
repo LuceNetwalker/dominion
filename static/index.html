@@ -15,6 +15,21 @@
 <body>
     <canvas id="dominionCanvas"></canvas>
     <button id="finishButton" style="display: none;"></button>
+    <div id="container">
+        <button id="startButton" style="display: inline;">Start Game</button>
+        <!-- Input field with dropdown list -->
+        <label for="options">Choose a Kingdomcard Playset:</label>
+        <select id="options" style="margin-bottom: 10px; display: inline;">
+          <option value="Deck Top">Deck Top</option>
+          <option value="First Game">First Game</option>
+          <option value="Improvements">Improvements</option>
+          <option value="Silver & Gold">Silver & Gold</option>
+          <option value="Size Distortion">Size Distortion</option>
+          <option value="Sleight of Hand">Sleight of Hand</option>
+          <option value="random" selected>Random</option>
+          <!-- Add more options as needed -->
+        </select>
+    </div>
 
     <script src="/static/card_images.js"></script>
     <script src="/static/supply.js"></script>

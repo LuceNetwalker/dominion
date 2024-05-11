@@ -20,6 +20,7 @@ var playArea;
 var supply;
 var player;
 var opponent;
+var selectedOption;
 
 var messageHandlers = {
     notify_player_joined: [],
@@ -66,6 +67,7 @@ function main() {
 
     player = new Player(player_name, 3.5 * (cardHeight + 10), true);
 
+    messageHandlers['notify_started_game'].push((message) => player.handleStartedGame(message));
     messageHandlers['notify_gained_card_to_hand'].push((message) => player.handleGainedCardToHand(message));
     messageHandlers['notify_gained_card_to_discard'].push((message) => player.handleGainedCardToDiscard(message));
     messageHandlers['notify_took_card_from_hand'].push((message) => player.handleTookCardFromHand(message));
@@ -94,6 +96,17 @@ function main() {
     websocket.on('connect', function () {
         console.log("connected!");
     
+        var args = {
+            name: player_name,
+            game: 'random',
+            ai: 'BigMoneyPlayer',
+            requires: ['throne_room', 'vassal'],
+        };
+        websocket.emit('user_join', args);
+    });
+    websocket.on('choose_other_name', () => {
+        player_name = prompt('You need to choose a different name, the current one is already in use:');
+
         var args = {
             name: player_name,
             game: 'random',
